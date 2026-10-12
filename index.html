@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ôn tập cuối kỳ – Nghe · Đọc</title>
+<style>
+:root{
+  --bg:#f4f1ea; --card:#fffdf8; --ink:#22201c; --muted:#6f6a60; --line:#ddd6c8;
+  --accent:#1f5f5b; --accent-soft:#e2efec; --key:#1f5f5b; --ok:#1c7a43; --ok-soft:#e4f3ea; --bad-soft:#eeeae0;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Segoe UI",system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.bar{max-width:980px;margin:0 auto;padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:700;margin-right:auto;letter-spacing:.2px}
+.tab{border:1px solid var(--line);background:transparent;color:var(--ink);padding:8px 16px;border-radius:999px;font:inherit;cursor:pointer}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.tab small{opacity:.75;margin-left:4px}
+main{max-width:980px;margin:0 auto;padding:20px 16px 80px}
+section.screen{display:none}
+section.screen.on{display:block}
+h1{font-size:26px;margin:8px 0 4px}
+h2{font-size:19px;margin:34px 0 6px;padding-top:8px}
+.lead{color:var(--muted);margin:0 0 14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+.chips a{font-size:13px;text-decoration:none;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:999px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+.instr{color:var(--muted);font-style:italic;margin:0 0 10px}
+audio{width:100%;margin:6px 0 12px}
+.passage{background:#faf6ec;border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0 16px}
+.passage p{margin:0 0 10px}
+.passage h4{margin:0 0 8px;text-align:center}
+.q{padding:12px 0;border-top:1px dashed var(--line)}
+.q:first-of-type{border-top:0}
+.qt{margin-bottom:6px}
+.qimg{display:block;max-width:min(100%,320px);border:1px solid var(--line);border-radius:6px;margin:6px 0 8px;background:#fff}
+.who{display:flex;gap:12px;align-items:flex-start}
+.who img{width:96px;border-radius:6px;flex:none}
+.opts{display:grid;gap:4px}
+.opts.row{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.opts.pics{grid-template-columns:repeat(3,1fr);gap:10px}
+.opt{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:8px;cursor:pointer}
+.opt:hover{background:var(--accent-soft)}
+.opt input{margin-top:6px;flex:none}
+.opt img{max-width:100%;max-height:150px;display:block;border:1px solid var(--line);border-radius:6px;background:#fff}
+.opts.pics .opt{flex-wrap:wrap}
+/* đáp án: gạch chân + in đậm */
+.done .opt{cursor:default}
+.done .opt:hover{background:transparent}
+.done .opt.key .lt,.done .opt.key .ot{color:var(--key);text-decoration:underline;text-underline-offset:3px;font-weight:600}
+.done .opt.key img{outline:3px solid var(--key)}
+.done .opt.wrong .ot{text-decoration:line-through;color:var(--muted)}
+.done .opt.wrong{background:var(--bad-soft)}
+.done .opt.right{background:var(--ok-soft)}
+.verdict{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:999px;font-weight:600;font-size:14px}
+.verdict.ok{background:var(--ok-soft);color:var(--ok)}
+.verdict.no{background:#f6e7c8;color:#7a5200}
+.q.isno{border-left:4px solid #d9a441;padding-left:12px}
+.q.isok{border-left:4px solid #7fc29b;padding-left:12px}
+.wr{color:#7a5200}
+.mark{font-weight:700;margin-left:6px}
+.mark.ok{color:var(--ok)} .mark.no{color:var(--muted)}
+.foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+button.btn{font:inherit;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer}
+button.btn.ghost{background:transparent;color:var(--accent)}
+button.btn:disabled{opacity:.5;cursor:wait}
+.score{font-weight:700}
+textarea,input[type=text],input[type=password],select{width:100%;font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+textarea{resize:vertical;min-height:90px}
+textarea:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.src{background:#faf6ec;border-radius:6px;padding:10px 14px;margin:6px 0 10px}
+.wc{font-size:13px;color:var(--muted)}
+.model{margin-top:12px;padding:10px 14px;border:1px dashed var(--key);border-radius:8px}
+.model b{display:block;font-size:13px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.model span{color:var(--key);white-space:pre-wrap}
+.model span.u{text-decoration:underline;text-underline-offset:3px}
+.ai{margin-top:12px;padding:12px 14px;background:var(--accent-soft);border-radius:8px;white-space:pre-wrap}
+.ai b.h{display:block;font-size:13px;letter-spacing:.3px;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.ai.err{background:var(--bad-soft)}
+.rw{padding:12px 0;border-top:1px dashed var(--line)}
+.rw:first-of-type{border-top:0}
+.hint{color:var(--accent);font-weight:600}
+dialog{border:1px solid var(--line);border-radius:12px;padding:20px;max-width:520px;width:calc(100% - 32px);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog label{display:block;font-weight:600;margin:12px 0 4px}
+dialog p{color:var(--muted);font-size:14px;margin:6px 0}
+ul.tight{margin:6px 0;padding-left:20px}
+@media (max-width:600px){.opts.pics{grid-template-columns:1fr 1fr}.brand{width:100%}}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="brand">Ôn tập cuối kỳ</div>
+  <button class="tab" data-s="nghe">🎧 Nghe</button>
+  <button class="tab" data-s="doc">📖 Đọc</button>
+</div></header>
+
+<main>
+  <section class="screen" id="nghe"></section>
+  <section class="screen" id="doc"></section>
+</main>
+
+<script>
+/* ===================== LƯU TRẠNG THÁI ===================== */
+const SKEY='ontap_nghedoc_v1';
+let S={quiz:{}};
+try{S=Object.assign(S,JSON.parse(localStorage.getItem(SKEY)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(SKEY,JSON.stringify(S))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e};
+const LET='ABCD';
+
+/* ===================== DỮ LIỆU: NGHE ===================== */
+const AUDIO=n=>`audio/recording-${n}.mp3`;
+const pic=n=>`assets/nghe/image${String(n).padStart(3,'0')}.png`;
+const pics=(start,list)=>list.map(([q,k],i)=>({q,k,imgs:[0,1,2].map(j=>pic(start+3*i+j))}));
+const TF=['True','False'];
+const NGHE=[
+ {part:'I',instr:'Listen to short recordings and choose the correct picture for each question (A, B or C). You will listen twice.',recs:[
+  {n:1,qs:pics(2,[['What did the man buy?',1],['How will the woman help the man?',2],['What will the students buy for their teacher?',1],['Which exhibition is the busiest today?',0],['Where can visitors see the ducks?',2]])},
+  {n:2,qs:pics(17,[['Where will Peter give Joanna the book?',1],['What did the girl buy at the market?',2],['What will the weather be like for the race?',0],['What does the girl like best about the city?',2],['What does the boy think was unusual about the film?',0]])}
+ ]},
+ {part:'II',instr:'Listen to the recording and choose the correct answer for each question. You will listen to the recording twice.',recs:[
+  {n:3,qs:[
+   {q:'What does Tim enjoy most about his job?',o:['sorting out all the details','getting to know the musicians','listening to lots of good music'],k:2},
+   {q:'Young musicians who want to do the course',o:['need to fill in an online form.','have to perform to a very high level.','must be able to speak English very well.'],k:0},
+   {q:'Tim says that the teachers on the course',o:['usually enjoy themselves.','are always complaining.','are extremely well-paid.'],k:0},
+   {q:'Tim likes to hold the course in a place which',o:['is specially designed for musicians.','is convenient for public transport.','is a long way from a big city.'],k:1},
+   {q:'What does Tim say about musical instruments?',o:['Students cannot bring expensive ones.','Students sometimes lose them.','Students keep them in a special place.'],k:2}]},
+  {n:4,qs:[
+   {q:'Amy decided to become a fashion designer while',o:['she was still at school.','she was working in a shop.','she was helping run a fashion show.'],k:1},
+   {q:'Amy says the most important skill for a designer is',o:['remaining patient in difficult situations.','knowing about different materials.','understanding how clothes are made.'],k:2},
+   {q:'What does Amy particularly like about her work?',o:['being able to sell her designs.','seeing her clothes on display','having her name recognised'],k:2},
+   {q:'How does Amy feel about today’s fashion?',o:['She would like clothes to be more practical.','She feels clothes should be more attractive.','She’s pleased sports clothes are popular.'],k:1},
+   {q:'What helps Amy find new ideas for designs?',o:['seeing things around her.','going to visit museums.','looking at photos of clothes.'],k:0}]}
+ ]},
+ {part:'III',instr:'Listen and choose the best answer A, B, C or D for each question. You will listen to the recording twice.',row:1,recs:[
+  {n:5,qs:[
+   {q:'The time the trip takes is ________.',o:['one hour','one hour and a half','forty-five minutes','two hours'],k:1},
+   {q:'In the past, Oldsville had an important ________ industry.',o:['tourism','farming','oil','railway'],k:2},
+   {q:'Passengers can see pretty ________ close to the train.',o:['wild animals','flowers','desert plants','trees'],k:2},
+   {q:'There are some attractive ________ to see under an old bridge.',o:['rivers','rocks','caves','birds'],k:1},
+   {q:'In a small store on the train, ________ are on sale.',o:['snacks','books','souvenirs','drinks'],k:2},
+   {q:'Today, refreshments will be for sale in a ________ instead of from a machine.',o:['box','bag','basket','trolley'],k:2},
+   {q:'The train was built in ________.',o:['1923','1933','1943','1953'],k:1},
+   {q:'During the trip, the speaker will sell drinks and snacks from a ________.',o:['trolley','backpack','basket','counter'],k:2}]},
+  {n:6,qs:[
+   {q:'Steve had accommodation in a shared ________.',o:['cabin','hotel','tent','hostel'],k:2},
+   {q:'Steve says it was important to have good ________ at the end of each day.',o:['clothes','meals','equipment','weather'],k:1},
+   {q:'Steve worked with a team that made a ________ through the forest.',o:['bridge','road','path','tunnel'],k:2},
+   {q:'Steve also collected information needed for a ________ of the forest area.',o:['photograph','report','map','video'],k:2},
+   {q:'In the morning Steve was surprised to hear the sound of ________ in the forest.',o:['monkeys','birds','rabbits','deer'],k:2},
+   {q:'When he did the trip, Steve only had to pay for his ________.',o:['accommodation','meals','equipment','flight'],k:3},
+   {q:'Steve travelled to New Zealand in ________.',o:['October','December','January','March'],k:2},
+   {q:'The tourist centre is expected to open in another ________.',o:['six months','one or two years','three years','five years'],k:1}]}
+ ]},
+ {part:'IV',instr:'Listen to the conversation and decide whether each sentence is True or False. You will listen to the recording twice.',row:1,recs:[
+  {n:7,qs:[
+   ['They agree that the wildlife centre building is well designed.',1],
+   ['Julie thought the sharks at the wildlife centre were frightening.',1],
+   ['Julie found the building was too warm.',0],
+   ['Greg was disappointed with the number of insects.',0],
+   ['Greg only managed to see one tree frog.',1],
+   ['Julie is very keen to return to the wildlife centre.',0],
+   ['Greg believes they should learn more about the animals before visiting the wildlife centre again.',0],
+   ['Julie agrees that learning more about the animals would make the visit more enjoyable.',1]].map(([q,k])=>({q,o:TF,k}))},
+  {n:8,qs:[
+   ['Martha thinks the last episode was easy to understand.',1],
+   ['James believes Dr Madison is the main reason why the series is so successful.',0],
+   ['They agree that the last show in the series was complicated.',0],
+   ['James believes that the series is successful because of the main character.',0],
+   ['They both admire the main character’s behaviour.',1],
+   ['Martha thinks that the main character has similar skills to a detective.',0],
+   ['James was surprised to find the main character so funny.',1],
+   ['They both plan to watch the series again.',1]].map(([q,k])=>({q,o:TF,k}))}
+ ]}
+];
+
+/* ===================== DỮ LIỆU: ĐỌC ===================== */
+const dimg=n=>`assets/doc/image${String(n).padStart(3,'0')}.jpg`;
+const PR={
+ spot:'<b>Spotlight.</b> This Thursday, writer Kate Dyer talks about the relationship between her poetry and her work as a history teacher. Kate will perform her latest poem, ‘Sunshine’. Listeners can then phone in and talk to Kate about her work. Dramatist David Fry will also talk about his latest book on historical drama from the 19th century.',
+ gm:'<b>Good Morning.</b> This programme has regular reports on current affairs and news stories as they happen at home and abroad, plus discussions every morning about the background to world news. All this week, the programme features interviews with ordinary people around the world who talk about the recent history of their country.',
+ out:'<b>Out and About.</b> Hear all the latest in the world of pop and rock, including a week of major concerts as they happen every evening, coming direct from Birmingham. After each concert, listeners can also hear members of the band answering questions about their music.',
+ show:'<b>Showtime.</b> This is a perfect programme for lovers of new plays, music and poetry. On Saturday, listeners have the chance to hear the prize-winning play ‘Machines’. Poet Roger Brookes will also read from his new collection ‘Rainbow’ and composer Jack Williams will play his latest piece for classical guitar.',
+ hist:'<b>History team.</b> This Wednesday, a local team tries to prove that people lived in the rocky hills of their area thousands of years ago. Specialist presenter Dr. Clive Sparky describes what they find. Listeners can ring in and ask his questions, and discuss their own interests and local discoveries.',
+ bot:'<b>Before Our Time.</b> On Saturday, this weekly programme includes the first part of a documentary series about the discovery of the site of a 15th-century village. Professor John Frost and his team will talk about what life was like for the villagers.'
+};
+const DOC=[
+ {id:'d1',title:'I. Notices & messages',instr:'Read the texts or descriptions. Choose the correct answer A, B or C for the correct explanation.',qs:[
+  {img:dimg(2),o:['This bus service cannot be used by college staff unless they show ID cards.','Students can get their ID cards on the bus.','Students are not allowed on the bus unless they have ID cards.'],k:2},
+  {img:dimg(3),o:['Laura liked the jumper Jane bought, but needs it in a different size.','Laura wants to try to get the same jumper in a different colour.','Laura received two jumpers which were the same, so wants to exchange one.'],k:1},
+  {img:dimg(4),q:'The library will',o:['have shorter opening hours until next Friday.','change its opening hours next Friday.','open again to students next Friday.'],k:1},
+  {img:dimg(5),o:['Jo is pleased with the number of things she saw from the bus.','Jo regrets not having walked around the city to look at the sights.','Jo thinks there are better sightseeing tours than the one she took.'],k:0},
+  {img:dimg(6),o:['Customers may park outside the market for up to three hours.','You may unload your vehicle here at any time.','Customers may park here at times when vehicles are not unloading.'],k:2},
+  {img:dimg(7),o:['If you are ill, the library will not charge you for returning books late.','Send any books due back by post, as the library is closed.','As the library is closed, users can put books through the letterbox.'],k:2},
+  {img:dimg(8),q:'To make biscuits, James needs to buy ______',o:['sugar.','butter.','flour.'],k:2},
+  {img:dimg(9),o:['Do not leave your bicycle touching the window.','Your bicycle may not be safe here.','Broken glass may damage your bicycle tyres.'],k:0},
+  {img:dimg(10),q:'If you want to go to London,',o:['buy a ticket before Saturday.','write your phone number here.','go and tell Kim immediately.'],k:1},
+  {img:dimg(11),o:['The red light will come on when you enter this room.','Stay outside until the red light comes on.','Only come in if there is no red light showing.'],k:2}]},
+ {id:'d2',title:'II. Matching people with radio programmes',start:6,html:1,instr:'The people below all want to find a radio programme they could enjoy listening to this week. Decide which programme would be the most suitable for each person.',qs:[
+  {who:dimg(12),q:'Roberta and Alice are interested in pop music. They want to listen to a live performance, and would also enjoy hearing interviews with some of the performers.',o:[PR.spot,PR.gm,PR.out],k:2},
+  {who:dimg(13),q:'Paul enjoys listening to good modern drama. He works long hours during the week so he can only listen to the radio at weekends.',o:[PR.show,PR.hist,PR.spot],k:0},
+  {who:dimg(14),q:'Steven teaches history and likes listening to experts talking about his subject. However, he hates shows which invite listeners to phone in.',o:[PR.out,PR.bot,PR.show],k:1},
+  {who:dimg(15),q:'Al writes poetry, and enjoys hearing other writers read their poems on the radio. He wants to have the opportunity to give his own opinions live on the programme.',o:[PR.spot,PR.bot,PR.out],k:0},
+  {who:dimg(16),q:'Kim and Yannis are interested in finding out about the latest international events. They want to listen to a programme that is on every day.',o:[PR.hist,PR.gm,PR.show],k:1}]},
+ {id:'d3',title:'III. Correct / Incorrect',start:11,row:1,instr:'Read the article and decide whether each sentence is “Correct” (A) or “Incorrect” (B).',
+  passage:`<h4>Co-operative Young Film-makers of the Year</h4>
+<p>Have you got something to say? An idea for a great movie? An interesting documentary? Or an amusing comedy? Don't keep it to yourself. Get together with some friends, share your thoughts and make a film or video.</p>
+<p>Every year, Co-operative Young Film-makers offers you the chance to see your work on the big screen. For over 30 years the Co-operative has organised a festival for young film-makers, proving how committed we are to young people and their films. We'll be holding this year's festival on Friday 9 and Saturday 10 October at the National Film Theatre.</p>
+<p>We're looking for young film-makers with imagination. Whether you're already planning a career in the movies or have never made a film in your life, it doesn't matter. We want to see films and videos from people of all abilities and levels of experience.</p>
+<p><b>NOW FOR OUR RULES AND SUGGESTIONS</b></p>
+<p>* You might be at school or college. Perhaps a member of a youth club or drama group. Maybe just a group of friends. The only thing we do say is that you have to be less than 21 years old in order to enter our competition.</p>
+<p>* We want to show as many films as we can on the big screen - the briefer the films, the more we can show. You can say a lot in the six minutes or less that we suggest. Especially if you plan your film in advance and edit it well.</p>
+<p>* You need to supply your own equipment - try borrowing from family and friends. Most types of film and video are acceptable. Just concentrate on getting the most out of your equipment. Experiment a bit!</p>
+<p>* Think of an interesting storyline. It'll help to make your work a bit different. We're really keen to get films about the environment or international issues. Why not try writing your own music?</p>
+<p>Every film and video we receive is looked at by our group of judges. They watch each one from start to finish, then tell you what they think. This can really help if you are thinking about trying again in twelve months' time.</p>
+<p>If your film is chosen for screening at the festival - and last year 50 were - you will get free entry to the festival, and we will cover any costs, such as your travel. The festival ends with a presentation on stage after your work is screened.</p>
+<p>Get in touch before you start filming and we'll post you a full information pack. This will include a form to enter the competition and other details you need to consider.</p>
+<p>Don't forget the competition closing date is Monday 11 May.</p>`,
+  qs:[
+  ['This is the first Co-operative film-making competition for 30 years.',1],
+  ['You can enter the competition without any experience of film-making.',0],
+  ['The Co-operative prefers short films.',0],
+  ['The Co-operative will lend you whatever you require to make your film.',1],
+  ['The Co-operative suggests putting music in your film.',0],
+  ['The judges will watch the whole of every film entered.',0],
+  ['If you are 18 and enter the competition this year, you can still enter it next year.',0],
+  ['Films entered in the competition are all screened at the festival.',1],
+  ['The Co-operative pays for some people to attend the festival.',1],
+  ['Information packs will be available from 11 May.',1]].map(([q,k])=>({q,o:['Correct','Incorrect'],k}))},
+ {id:'d4',title:'IV. Reading comprehension',instr:'Read the text and choose the correct answer A, B, C or D for each question.',
+  passage:`<p>The Sun today is a yellow dwarf star. It is fueled by thermonuclear reactions near its center that convert hydrogen to helium. The Sun has existed in its present state for about four billion six hundred million years and is thousands of times larger than the Earth.</p>
+<p>By studying other stars, astronomers can predict what the rest of the Sun's life will be like. About five billion years from now, the core of the Sun will shrink and become hotter. The surface temperature will fall. The higher temperature of the center will increase the rate of thermonuclear reactions. The outer regions of the Sun will expand approximately 35 million miles, about the distance to Mercury, which is the closest planet to the Sun. The Sun will then be a red giant star. Temperatures on the Earth will become too high for life to exist.</p>
+<p>Once the Sun has used up its thermonuclear energy as a red giant, it will begin to shrink. After it shrinks to the size of the Earth, it will become a white dwarf star. The Sun may throw off huge amounts of gases in violent eruptions called nova explosions as it changes from a red giant to a white dwarf.</p>
+<p>After billions of years as a white dwarf, the Sun will have used up all its fuel and will have lost its heat. Such a star is called a black dwarf. After the Sun has become a black dwarf, the Earth will be dark and cold. If any atmosphere remains there, it will have frozen over the Earth's surface.</p>`,
+  qs:[
+  {q:'It can be inferred from the passage that the Sun ________.',o:['is approximately halfway through its life as a yellow dwarf star','will continue to be a yellow dwarf for another 10 billion years','has been in existence for 10 billion years','is rapidly changing in size and brightness'],k:0},
+  {q:'What will probably be the first stage of change for the Sun to become a red giant?',o:['Its surface will become hotter and shrink.','It will throw off huge amounts of gases.','Its central part will grow smaller and hotter.','Its core will cool off and use less fuel.'],k:2},
+  {q:'When the Sun becomes a red giant, what will the atmosphere be like on the Earth?',o:['It will be enveloped in the expanding surface of the sun.','It will become too hot for life to exist.','It will be almost destroyed by nova explosions.','It will freeze and become solid.'],k:1},
+  {q:'When the Sun has used up its energy as a red giant, it will ______.',o:['get frozen','cease to exist','stop to expand','become smaller'],k:3},
+  {q:'Large amounts of gases may be released from the Sun at the end of its life as a ________.',o:['black dwarf','white dwarf','red giant','yellow dwarf'],k:2},
+  {q:'As a white dwarf, the Sun will be ________.',o:['the same size as the planet Mercury','around 35 million miles in diameter','a cool and habitable planet','thousands of times smaller than it is today'],k:3},
+  {q:'The Sun will become a black dwarf when ________.',o:['the Sun moves nearer to the Earth','it has used up all its fuel as a white dwarf','the core of the Sun becomes hotter','the outer regions of the Sun expand'],k:1},
+  {q:'The word "there" in the last sentence of paragraph 4 refers to ________.',o:['the planet Mercury','the core of a black dwarf','our own planet','the outer surface of the Sun'],k:2},
+  {q:'This passage is intended to ________',o:['describe the changes that the Sun will go through','present a theory about red giant stars','alert people to the dangers posed by the Sun','discuss conditions on the Earth in the far future'],k:0},
+  {q:'The passage has probably been taken from ________',o:['a scientific journal','a news report','a work of science fiction','a scientific chronicle'],k:0}]},
+ {id:'d5',title:'V. Cloze – The Art of Drawing',row:1,instr:'Read the passage and choose the correct answer A, B, C or D to fill in each blank.',
+  passage:`<h4>THE ART OF DRAWING</h4>
+<p>Drawing has always been a very popular hobby. Young children draw with a pencil as (1) ______ as they can hold one. Drawing is often seen as a special skill, and it is (2) ______ that some people seem to draw perfect pictures without any effort. Yet drawing, like writing, can be (3) ______ you can draw accurately if you work really hard at it.</p>
+<p>Drawing is first (4) ______ all about looking carefully. It sounds easy to say that all you (5) ______ to do is look at things, but it really is that simple. The best way to draw a familiar (6) ______ is to imagine that you are looking at it for the first (7) ______</p>
+<p>Nowadays there are (8) ______ courses and materials available than ever before (9) ______ means that you can experiment to improve your skills. The only (10) ______ is your imagination.</p>`,
+  qs:[
+  [['fast','immediately','soon','shortly'],2],[['true','actual','exact','real'],0],[['discovered','made','learnt','reached'],2],
+  [['of','in','from','for'],0],[['should','need','must','could'],1],[['topic','subject','area','person'],1],
+  [['period','term','moment','time'],3],[['more','many','plenty','much'],0],[['who','what','where','which'],3],
+  [['final','end','limit','finish'],2]].map(([o,k],i)=>({q:`Blank (${i+1})`,o,k}))},
+ {id:'d6',title:'VI. Vocabulary in sentences',row:1,instr:'Read the sentences and choose the best word (A, B or C) for each space.',qs:[
+  {q:'The airport gets very _______ at weekends, so Richard travels during the week when it’s quieter.',o:['busy','strong','heavy'],k:0},
+  {q:'Richard _______ has a coffee when he arrives at the airport.',o:['already','once','usually'],k:2},
+  {q:'Richard _______ looking around the shops before he gets on the plane.',o:['hopes','enjoys','wants'],k:1},
+  {q:'Richard hates it when there’s a _______ as he likes to arrive on time.',o:['difference','moment','delay'],k:2},
+  {q:'Richard often watches films during the flight, or _______ to the person next to him.',o:['says','tells','talks'],k:2},
+  {q:'Sharon _______ at her tennis club four times a week.',o:['joins','enjoys','practices'],k:2},
+  {q:'Sharon _______ lots of competitions and often plays very well in them.',o:['enters','takes','earns'],k:0},
+  {q:'It’s Sharon’s birthday soon and she has _______ her parents for a new racket.',o:['told','asked','spoken'],k:1},
+  {q:'When Sharon loses a match, she always feels very _______',o:['upset','difficult','worst'],k:0},
+  {q:'Sharon’s friend has just started playing tennis and Sharon is helping her to _______',o:['copy','improve','know'],k:1}]}
+];
+
+/* ===================== TRẮC NGHIỆM ===================== */
+function quiz(id,qs,cfg={}){
+  const st=S.quiz[id]||(S.quiz[id]={a:[],done:false});
+  const box=el('div','quiz');
+  const start=cfg.start||1;
+  qs.forEach((q,i)=>{
+    const d=el('div','q');
+    let head=`<b>${start+i}.</b> ${q.q?esc(q.q):''}`;
+    if(q.who) head=`<div class="who"><img src="${q.who}" alt=""><div>${head}</div></div>`;
+    d.appendChild(el('div','qt',head));
+    if(q.img){const im=el('img','qimg');im.src=q.img;im.alt='Notice '+(start+i);d.appendChild(im)}
+    const opts=el('div','opts'+(q.imgs?' pics':cfg.row?' row':''));
+    (q.imgs||q.o).forEach((o,j)=>{
+      const lab=el('label','opt');
+      const body=q.imgs?`<img src="${o}" alt="Picture ${LET[j]}">`:(cfg.html?o:esc(o));
+      lab.innerHTML=`<input type="radio" name="${id}_${i}" value="${j}"><span class="lt">${LET[j]}.</span><span class="ot">${body}</span>`;
+      const inp=lab.firstChild;
+      if(st.a[i]===j)inp.checked=true;
+      inp.onchange=()=>{st.a[i]=j;save()};
+      opts.appendChild(lab);
+    });
+    d.appendChild(opts);box.appendChild(d);
+  });
+  const foot=el('div','foot');
+  const sub=el('button','btn','Nộp bài'),redo=el('button','btn ghost','Làm lại'),sc=el('span','score');
+  foot.append(sub,redo,sc);box.appendChild(foot);
+  function grade(){
+    let right=0;const wrong=[];box.classList.add('done');
+    box.querySelectorAll('.q').forEach((d,i)=>{
+      const k=qs[i].k,a=st.a[i];
+      d.querySelectorAll('.opt').forEach((lab,j)=>{
+        lab.firstChild.disabled=true;
+        if(j===k)lab.classList.add('key');
+        if(a===j)lab.classList.add(j===k?'right':'wrong');
+      });
+      if(a===k)right++;else wrong.push(start+i);
+      d.classList.add(a===k?'isok':'isno');
+      d.appendChild(el('div','verdict '+(a===k?'ok':'no'),a===k?`✓ Đúng — đáp án ${LET[k]}`:`✗ Sai — ${a==null?'bạn chưa chọn':'bạn chọn '+LET[a]}, đáp án đúng là ${LET[k]}`));
+    });
+    sc.innerHTML=`Kết quả: ${right}/${qs.length} câu đúng`+(wrong.length?` · <span class="wr">Sai câu: ${wrong.join(', ')}</span>`:' · Đúng hết 🎉');
+    sub.disabled=true;
+  }
+  sub.onclick=()=>{st.done=true;save();grade()};
+  redo.onclick=()=>{S.quiz[id]={a:[],done:false};save();box.replaceWith(quiz(id,qs,cfg))};
+  if(st.done)grade();
+  return box;
+}
+
+/* ===================== MÀN: NGHE ===================== */
+function buildNghe(){
+  const r=document.getElementById('nghe');
+  r.innerHTML=`<h1>Kỹ năng Nghe 3</h1><p class="lead">8 bản ghi âm. Bấm phát, làm bài rồi <b>Nộp bài</b> — đáp án đúng sẽ được gạch chân.</p>
+  <div class="chips">${[1,2,3,4,5,6,7,8].map(n=>`<a href="#rec${n}">Recording ${n}</a>`).join('')}</div>`;
+  NGHE.forEach(p=>{
+    r.appendChild(el('h2','',`Part ${p.part}`));
+    r.appendChild(el('p','instr',esc(p.instr)));
+    p.recs.forEach(rec=>{
+      const c=el('div','card');c.id='rec'+rec.n;
+      c.innerHTML=`<b>Recording ${rec.n}</b><audio controls preload="none" src="${AUDIO(rec.n)}"></audio>`;
+      c.appendChild(quiz('L'+rec.n,rec.qs,{row:p.row}));
+      r.appendChild(c);
+    });
+  });
+}
+
+/* ===================== MÀN: ĐỌC ===================== */
+function buildDoc(){
+  const r=document.getElementById('doc');
+  r.innerHTML=`<h1>Kỹ năng Đọc 3</h1><p class="lead">6 dạng bài. Nộp từng phần để xem đáp án (gạch chân) và số câu đúng.</p>
+  <div class="chips">${DOC.map(d=>`<a href="#${d.id}">${d.title.split('.')[0]}</a>`).join('')}</div>`;
+  DOC.forEach(d=>{
+    const c=el('div','card');c.id=d.id;
+    c.innerHTML=`<h2 style="margin-top:0;padding-top:0">${esc(d.title)}</h2><p class="instr">${esc(d.instr)}</p>`+(d.passage?`<div class="passage">${d.passage}</div>`:'');
+    c.appendChild(quiz('R'+d.id,d.qs,{row:d.row,html:d.html,start:d.start}));
+    r.appendChild(c);
+  });
+}
+
+/* ===================== ĐIỀU HƯỚNG & CÀI ĐẶT ===================== */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
+  document.querySelectorAll('.tab[data-s]').forEach(t=>t.classList.toggle('on',t.dataset.s===id));
+  document.querySelectorAll('audio').forEach(a=>{if(!a.closest('.screen.on'))a.pause()});
+  S.tab=id;save();window.scrollTo(0,0);
+}
+document.querySelectorAll('.tab[data-s]').forEach(t=>t.onclick=()=>show(t.dataset.s));
+// chỉ phát một file âm thanh tại một thời điểm
+document.addEventListener('play',e=>{document.querySelectorAll('audio').forEach(a=>{if(a!==e.target)a.pause()})},true);
+buildNghe();buildDoc();
+show(['nghe','doc'].includes(S.tab)?S.tab:'nghe');
+</script>
+</body>
+</html>
