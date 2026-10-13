@@ -291,6 +291,16 @@ function quiz(id,qs,cfg={}){
   const st=S.quiz[id]||(S.quiz[id]={a:[],done:false});
   const box=el('div','quiz');
   const start=cfg.start||1;
+  // st.p: thứ tự hiển thị đáp án của từng câu khi đã đảo; st.a vẫn lưu chỉ số gốc
+  const nOpt=i=>(qs[i].imgs||qs[i].o).length;
+  const order=i=>(st.p&&st.p[i])||Array.from({length:nOpt(i)},(_,x)=>x);
+  const mixed=i=>{
+    const cur=order(i);
+    if(cur.length<3)return cur; // True/False, Correct/Incorrect giữ nguyên
+    let p;
+    do{p=cur.slice();for(let x=p.length-1;x>0;x--){const y=Math.floor(Math.random()*(x+1));[p[x],p[y]]=[p[y],p[x]]}}while(p.join()===cur.join());
+    return p;
+  };
   qs.forEach((q,i)=>{
     const d=el('div','q');
     let head=`<b>${start+i}.</b> ${q.q?esc(q.q):''}`;
@@ -298,10 +308,11 @@ function quiz(id,qs,cfg={}){
     d.appendChild(el('div','qt',head));
     if(q.img){const im=el('img','qimg');im.src=q.img;im.alt='Notice '+(start+i);d.appendChild(im)}
     const opts=el('div','opts'+(q.imgs?' pics':cfg.row?' row':''));
-    (q.imgs||q.o).forEach((o,j)=>{
-      const lab=el('label','opt');
-      const body=q.imgs?`<img src="${o}" alt="Picture ${LET[j]}">`:(cfg.html?o:esc(o));
-      lab.innerHTML=`<input type="radio" name="${id}_${i}" value="${j}"><span class="lt">${LET[j]}.</span><span class="ot">${body}</span>`;
+    const list=q.imgs||q.o;
+    order(i).forEach((j,pos)=>{
+      const o=list[j],lab=el('label','opt');lab.dataset.j=j;
+      const body=q.imgs?`<img src="${o}" alt="Picture ${LET[pos]}">`:(cfg.html?o:esc(o));
+      lab.innerHTML=`<input type="radio" name="${id}_${i}" value="${j}"><span class="lt">${LET[pos]}.</span><span class="ot">${body}</span>`;
       const inp=lab.firstChild;
       if(st.a[i]===j)inp.checked=true;
       inp.onchange=()=>{st.a[i]=j;save()};
@@ -311,25 +322,33 @@ function quiz(id,qs,cfg={}){
   });
   const foot=el('div','foot');
   const sub=el('button','btn','Nộp bài'),redo=el('button','btn ghost','Làm lại'),sc=el('span','score');
-  foot.append(sub,redo,sc);box.appendChild(foot);
+  foot.append(sub,redo);
+  if(st.p&&qs.some((_,i)=>nOpt(i)>2)){
+    const orig=el('button','btn ghost','Thứ tự gốc');
+    orig.onclick=()=>{S.quiz[id]={a:[],done:false};save();box.replaceWith(quiz(id,qs,cfg))};
+    foot.append(orig);
+  }
+  foot.append(sc);box.appendChild(foot);
   function grade(){
     let right=0;const wrong=[];box.classList.add('done');
     box.querySelectorAll('.q').forEach((d,i)=>{
-      const k=qs[i].k,a=st.a[i];
-      d.querySelectorAll('.opt').forEach((lab,j)=>{
+      const k=qs[i].k,a=st.a[i],L=j=>LET[order(i).indexOf(j)];
+      d.querySelectorAll('.opt').forEach(lab=>{
+        const j=+lab.dataset.j;
         lab.firstChild.disabled=true;
         if(j===k)lab.classList.add('key');
         if(a===j)lab.classList.add(j===k?'right':'wrong');
       });
       if(a===k)right++;else wrong.push(start+i);
       d.classList.add(a===k?'isok':'isno');
-      d.appendChild(el('div','verdict '+(a===k?'ok':'no'),a===k?`✓ Đúng — đáp án ${LET[k]}`:`✗ Sai — ${a==null?'bạn chưa chọn':'bạn chọn '+LET[a]}, đáp án đúng là ${LET[k]}`));
+      d.appendChild(el('div','verdict '+(a===k?'ok':'no'),a===k?`✓ Đúng — đáp án ${L(k)}`:`✗ Sai — ${a==null?'bạn chưa chọn':'bạn chọn '+L(a)}, đáp án đúng là ${L(k)}`));
     });
     sc.innerHTML=`Kết quả: ${right}/${qs.length} câu đúng`+(wrong.length?` · <span class="wr">Sai câu: ${wrong.join(', ')}</span>`:' · Đúng hết 🎉');
     sub.disabled=true;
   }
   sub.onclick=()=>{st.done=true;save();grade()};
-  redo.onclick=()=>{S.quiz[id]={a:[],done:false};save();box.replaceWith(quiz(id,qs,cfg))};
+  // làm lại thì đảo luôn vị trí đáp án
+  redo.onclick=()=>{S.quiz[id]={a:[],done:false,p:qs.map((_,i)=>mixed(i))};save();box.replaceWith(quiz(id,qs,cfg))};
   if(st.done)grade();
   return box;
 }
