@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ôn tập cuối kỳ – Nghe · Đọc</title>
+<title>Ôn tập cuối kỳ tiếng Anh</title>
 <style>
 :root{
   --bg:#f4f1ea; --card:#fffdf8; --ink:#22201c; --muted:#6f6a60; --line:#ddd6c8;
@@ -11,7 +11,7 @@
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Segoe UI",system-ui,sans-serif}
-header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
 .bar{max-width:980px;margin:0 auto;padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .brand{font-weight:700;margin-right:auto;letter-spacing:.2px}
 .tab{border:1px solid var(--line);background:transparent;color:var(--ink);padding:8px 16px;border-radius:999px;font:inherit;cursor:pointer}
@@ -94,17 +94,34 @@ ul.tight{margin:6px 0;padding-left:20px}
   <div class="brand">Ôn tập cuối kỳ</div>
   <button class="tab" data-s="nghe">🎧 Nghe</button>
   <button class="tab" data-s="doc">📖 Đọc</button>
+  <button class="tab" data-s="viet">📝 Viết</button>
+  <button class="tab" data-s="dich">✍️ Dịch</button>
+  <button class="tab" id="cfgBtn" title="Cài đặt AI chấm bài">⚙️</button>
 </div></header>
 
 <main>
   <section class="screen" id="nghe"></section>
   <section class="screen" id="doc"></section>
+  <section class="screen" id="viet"></section>
+  <section class="screen" id="dich"></section>
 </main>
+
+<dialog id="cfg"><form method="dialog">
+  <b>Cài đặt AI chấm bài</b>
+  <p>Phần Viết và Dịch dùng Claude để chấm bài. Key chỉ lưu trong trình duyệt này và được gửi thẳng tới api.anthropic.com mỗi lần bạn bấm “AI chấm bài”.</p>
+  <label for="cfgKey">Anthropic API key</label>
+  <input type="password" id="cfgKey" autocomplete="off" placeholder="sk-ant-…">
+  <div class="foot">
+    <button class="btn" value="ok">Lưu</button>
+    <button class="btn ghost" value="del">Xoá key</button>
+    <button class="btn ghost" value="">Đóng</button>
+  </div>
+</form></dialog>
 
 <script>
 /* ===================== LƯU TRẠNG THÁI ===================== */
 const SKEY='ontap_nghedoc_v1';
-let S={quiz:{}};
+let S={quiz:{},tr:{},wr:{}};
 try{S=Object.assign(S,JSON.parse(localStorage.getItem(SKEY)||'{}'))}catch(e){}
 const save=()=>{try{localStorage.setItem(SKEY,JSON.stringify(S))}catch(e){}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -347,6 +364,293 @@ function buildDoc(){
   });
 }
 
+/* ===================== DỮ LIỆU: DỊCH ===================== */
+// mỗi mục: [đoạn gốc, bài dịch mẫu]
+const DICH=[
+ {id:'ev',title:'Part 1. English → Vietnamese',to:'tiếng Việt',instr:'Translate the following passages into Vietnamese (5 points).',items:[
+  [`Health experts argue that sleeping fewer than six hours a night may increase the risk of developing various chronic diseases, while many people still underestimate the importance of sleep for overall health. Individuals who regularly suffer from sleep deprivation not only find it difficult to concentrate but also tend to experience higher levels of stress and fatigue in their daily work.`,
+   `Các chuyên gia y tế cho rằng ngủ ít hơn sáu tiếng mỗi đêm có thể làm tăng nguy cơ mắc nhiều bệnh mãn tính khác nhau, trong khi nhiều người vẫn đánh giá thấp tầm quan trọng của giấc ngủ đối với sức khỏe tổng thể. Những người thường xuyên bị thiếu ngủ không chỉ khó tập trung mà còn có xu hướng căng thẳng và mệt mỏi nhiều hơn trong công việc hằng ngày.`],
+  [`People who know how to listen to others often build stronger and more lasting relationships because they are able to understand the emotions and needs of those around them. When disagreements occur, resolving problems through discussion usually leads to more positive outcomes than avoiding the issue or criticizing one another. Many psychologists believe that trust can only be established when both parties are willing to share their thoughts honestly.`,
+   `Những người biết lắng nghe người khác thường xây dựng được các mối quan hệ bền chặt và lâu dài hơn vì họ có thể thấu hiểu cảm xúc và nhu cầu của những người xung quanh. Khi xảy ra bất đồng, giải quyết vấn đề thông qua trao đổi thường mang lại kết quả tích cực hơn so với né tránh vấn đề hay chỉ trích lẫn nhau. Nhiều nhà tâm lý học tin rằng lòng tin chỉ có thể được tạo dựng khi cả hai bên đều sẵn sàng chia sẻ suy nghĩ của mình một cách trung thực.`],
+  [`If cities continue to expand without sustainable development plans, many serious environmental problems may arise in the future. The increasing number of vehicles not only contributes to air pollution but also places considerable pressure on urban infrastructure that is already overloaded in many areas.`,
+   `Nếu các thành phố tiếp tục mở rộng mà không có kế hoạch phát triển bền vững, nhiều vấn đề môi trường nghiêm trọng có thể nảy sinh trong tương lai. Số lượng phương tiện giao thông ngày càng tăng không chỉ góp phần gây ô nhiễm không khí mà còn tạo áp lực đáng kể lên cơ sở hạ tầng đô thị vốn đã quá tải ở nhiều khu vực.`],
+  [`After working continuously for many hours, many employees find it difficult to maintain concentration and high levels of productivity. Some companies have introduced flexible working schedules so that employees can achieve a better balance between their professional responsibilities and personal lives.`,
+   `Sau khi làm việc liên tục trong nhiều giờ, nhiều nhân viên cảm thấy khó duy trì sự tập trung và năng suất cao. Một số công ty đã áp dụng lịch làm việc linh hoạt để nhân viên có thể cân bằng tốt hơn giữa trách nhiệm công việc và cuộc sống cá nhân.`],
+  [`Considered one of the most popular forms of entertainment today, cinema not only provides moments of relaxation but also reflects many important social issues. Films based on real-life events often attract public attention because they help audiences gain a better understanding of actual events and people.`,
+   `Được xem là một trong những hình thức giải trí phổ biến nhất hiện nay, điện ảnh không chỉ mang lại những phút giây thư giãn mà còn phản ánh nhiều vấn đề xã hội quan trọng. Những bộ phim dựa trên các sự kiện có thật thường thu hút sự chú ý của công chúng vì chúng giúp khán giả hiểu rõ hơn về những sự kiện và con người có thật.`],
+  [`Although life expectancy has increased significantly thanks to advances in modern medicine, many experts are concerned that the number of people suffering from lifestyle-related diseases is rising at an alarming rate. Diseases that were once mainly associated with older adults are now being diagnosed in younger individuals, largely as a result of unhealthy diets and prolonged physical inactivity.`,
+   `Mặc dù tuổi thọ đã tăng lên đáng kể nhờ những tiến bộ của y học hiện đại, nhiều chuyên gia lo ngại rằng số người mắc các bệnh liên quan đến lối sống đang gia tăng ở mức đáng báo động. Những căn bệnh trước đây chủ yếu gặp ở người cao tuổi nay đang được chẩn đoán ở những người trẻ hơn, phần lớn là do chế độ ăn uống không lành mạnh và tình trạng ít vận động kéo dài.`],
+  [`Although many people know that daily exercise brings immense benefits to their health, they still struggle to maintain this habit due to their busy work schedules. If you cannot spend an hour at the gym, taking a brisk walk for about twenty minutes around your neighborhood in the evening is also an excellent alternative. When the body is exercised regularly, the immune system will become stronger, which helps you prevent many common illnesses.`,
+   `Mặc dù nhiều người biết rằng tập thể dục hằng ngày mang lại lợi ích to lớn cho sức khỏe, họ vẫn chật vật duy trì thói quen này do lịch làm việc bận rộn. Nếu bạn không thể dành một tiếng ở phòng tập, thì đi bộ nhanh khoảng hai mươi phút quanh khu phố vào buổi tối cũng là một lựa chọn thay thế tuyệt vời. Khi cơ thể được vận động thường xuyên, hệ miễn dịch sẽ trở nên khỏe mạnh hơn, giúp bạn phòng ngừa nhiều bệnh thông thường.`],
+  [`In any long-term relationship, trust is always considered the foundational element because without it, the affection between both sides can easily break down. When a misunderstanding occurs, sitting down together to listen to each other's opinions calmly is much more effective than choosing to remain silent.`,
+   `Trong bất kỳ mối quan hệ lâu dài nào, lòng tin luôn được xem là yếu tố nền tảng vì nếu thiếu nó, tình cảm giữa hai bên có thể dễ dàng đổ vỡ. Khi xảy ra hiểu lầm, cùng nhau ngồi xuống bình tĩnh lắng nghe ý kiến của nhau sẽ hiệu quả hơn nhiều so với việc chọn im lặng.`],
+  [`Since the amount of plastic waste released into the environment every day is increasing at an alarming rate, countries around the world are facing a severe pollution crisis. Although campaigns calling for limits on plastic bag use have been widely implemented, people's consumption habits have not seen many positive changes.`,
+   `Do lượng rác thải nhựa thải ra môi trường mỗi ngày đang tăng ở mức đáng báo động, các quốc gia trên thế giới đang phải đối mặt với một cuộc khủng hoảng ô nhiễm nghiêm trọng. Mặc dù các chiến dịch kêu gọi hạn chế sử dụng túi ni lông đã được triển khai rộng rãi, thói quen tiêu dùng của người dân vẫn chưa có nhiều thay đổi tích cực.`],
+  [`Since staying hydrated is essential for regulating body temperature and supporting digestion, you should make an effort to drink at least two liters of water every day. Many people often reach for carbonated drinks or coffee when they feel thirsty, which can inadvertently lead to mild dehydration and energy crashes later on. If you find it difficult to remember to drink water, keeping a reusable bottle on your desk can serve as an excellent visual reminder.`,
+   `Vì việc cung cấp đủ nước cho cơ thể rất cần thiết để điều hòa thân nhiệt và hỗ trợ tiêu hóa, bạn nên cố gắng uống ít nhất hai lít nước mỗi ngày. Nhiều người thường tìm đến đồ uống có ga hoặc cà phê khi thấy khát, điều này có thể vô tình dẫn đến mất nước nhẹ và tình trạng tụt năng lượng sau đó. Nếu bạn thấy khó nhớ việc uống nước, để một chai nước dùng nhiều lần trên bàn làm việc có thể là một lời nhắc trực quan rất hiệu quả.`],
+  [`Although social media platforms allow us to stay connected with hundreds of friends online, they cannot replace the emotional depth of face-to-face interactions. When we spend too much time scrolling through virtual updates, we might accidentally neglect the real relationships with family members who are sitting right next to us.`,
+   `Mặc dù các nền tảng mạng xã hội cho phép chúng ta giữ liên lạc với hàng trăm người bạn trên mạng, chúng không thể thay thế được chiều sâu cảm xúc của những cuộc gặp gỡ trực tiếp. Khi dành quá nhiều thời gian lướt xem các cập nhật trên thế giới ảo, chúng ta có thể vô tình bỏ bê những mối quan hệ thực với người thân đang ngồi ngay bên cạnh mình.`],
+  [`As global temperatures continue to rise due to greenhouse gas emissions, polar ice sheets are melting faster than scientists previously predicted. If coastal cities do not invest in robust flood defense systems immediately, millions of people will be forced to leave their homes because of rising sea levels.`,
+   `Khi nhiệt độ toàn cầu tiếp tục tăng do phát thải khí nhà kính, các tảng băng ở hai cực đang tan nhanh hơn so với dự đoán trước đây của các nhà khoa học. Nếu các thành phố ven biển không lập tức đầu tư vào hệ thống phòng chống lũ lụt vững chắc, hàng triệu người sẽ buộc phải rời bỏ nhà cửa vì mực nước biển dâng.`],
+  [`The Vietnam Golf Association (VGA) and Singapore Golf Association (SGA) have signed a Memorandum of Understanding (MoU) about their cooperation to develop the sport in two countries. Under the three-year deal, the two sides will coordinate to organize professional golf training courses for both associations' leaders and members of board of directors, sharing experiences on golf development strategy and management.`,
+   `Hiệp hội Golf Việt Nam (VGA) và Hiệp hội Golf Singapore (SGA) đã ký Biên bản ghi nhớ (MoU) về việc hợp tác phát triển môn thể thao này ở hai nước. Theo thỏa thuận có thời hạn ba năm, hai bên sẽ phối hợp tổ chức các khóa đào tạo golf chuyên nghiệp cho lãnh đạo và thành viên hội đồng quản trị của cả hai hiệp hội, đồng thời chia sẻ kinh nghiệm về chiến lược phát triển và quản lý golf.`],
+  [`The south-central coastal province of Khanh Hoa will organize a range of festivals and tourism, sports, cultural events in an effort to bolster the province’s tourism brand and attract tourists during the summer travel season. The Nha Trang Beach Tourism Festival that will take place from June 13 to 16 in Nha Trang City is one of major events that is expected to draw a large number of visitors during this summer, according to the provincial Department of Tourism.`,
+   `Tỉnh Khánh Hòa thuộc vùng duyên hải Nam Trung Bộ sẽ tổ chức hàng loạt lễ hội cùng các sự kiện du lịch, thể thao, văn hóa nhằm nâng tầm thương hiệu du lịch của tỉnh và thu hút du khách trong mùa du lịch hè. Theo Sở Du lịch tỉnh, Liên hoan Du lịch Biển Nha Trang diễn ra từ ngày 13 đến 16 tháng 6 tại thành phố Nha Trang là một trong những sự kiện lớn được kỳ vọng sẽ thu hút đông đảo du khách trong mùa hè này.`],
+  [`The French consulate in HCM City general launched an art exhibition called “Sport and Fraternity” at the French Residence on June 11 to mark the upcoming Olympic and Paralympic Games in Paris this summer. It features 13 photos by news agency AFP of athletes and audiences and others honoring the positive values of sports such as respect, determination and sportsmanship.`,
+   `Tổng Lãnh sự quán Pháp tại TP. Hồ Chí Minh đã khai mạc triển lãm nghệ thuật mang tên “Thể thao và Tình huynh đệ” tại Dinh thự Pháp vào ngày 11 tháng 6 để chào mừng Thế vận hội Olympic và Paralympic sắp diễn ra tại Paris mùa hè này. Triển lãm trưng bày 13 bức ảnh của hãng thông tấn AFP chụp các vận động viên, khán giả và những người khác, tôn vinh các giá trị tích cực của thể thao như sự tôn trọng, lòng quyết tâm và tinh thần thể thao.`]
+ ]},
+ {id:'ve',title:'Part 2. Vietnamese → English',to:'tiếng Anh',instr:'Translate these following passages into English (5 points).',items:[
+  [`Mặc dù hầu hết mọi người đều nhận thức được rằng việc duy trì một chế độ ăn uống cân bằng và tập thể dục thường xuyên có thể giúp phòng ngừa nhiều bệnh nguy hiểm, nhiều người vẫn lựa chọn những thói quen không lành mạnh vì áp lực công việc và cuộc sống hiện đại. Các chuyên gia y tế cho rằng tình trạng này không chỉ làm gia tăng nguy cơ mắc các bệnh mãn tính như tiểu đường và tim mạch mà còn ảnh hưởng tiêu cực đến sức khỏe tinh thần của con người.`,
+   `Although most people are aware that maintaining a balanced diet and exercising regularly can help prevent many dangerous diseases, many still choose unhealthy habits because of the pressures of work and modern life. Health experts believe that this situation not only increases the risk of chronic diseases such as diabetes and cardiovascular disease but also has a negative effect on people's mental health.`],
+  [`Mặc dù công nghệ hiện đại đã giúp mọi người dễ dàng liên lạc với nhau bất kể khoảng cách địa lý, nhiều người cho rằng các mối quan hệ cá nhân ngày nay thiếu sự gắn kết sâu sắc như trước đây. Khi mọi người dành quá nhiều thời gian cho các thiết bị điện tử thay vì trò chuyện trực tiếp, những hiểu lầm và khoảng cách về mặt cảm xúc có thể xuất hiện thường xuyên hơn.`,
+   `Although modern technology has made it easy for people to keep in touch with one another regardless of geographical distance, many believe that personal relationships today lack the deep bonds they once had. When people spend too much time on electronic devices instead of talking face to face, misunderstandings and emotional distance may arise more often.`],
+  [`Nhiều quốc gia đã triển khai các chính sách nhằm giảm lượng khí thải gây hiệu ứng nhà kính, tuy nhiên biến đổi khí hậu vẫn tiếp tục gây ra những tác động nghiêm trọng đối với môi trường và đời sống con người trên toàn thế giới. Các nhà khoa học cảnh báo rằng nếu không có những hành động quyết liệt hơn trong tương lai gần, các hiện tượng thời tiết cực đoan sẽ xảy ra thường xuyên hơn và gây ra những thiệt hại to lớn về kinh tế.`,
+   `Many countries have implemented policies aimed at reducing greenhouse gas emissions; however, climate change continues to have serious impacts on the environment and on human life around the world. Scientists warn that unless more decisive action is taken in the near future, extreme weather events will occur more frequently and cause enormous economic losses.`],
+  [`Được hình thành qua nhiều thế hệ và chịu ảnh hưởng bởi những điều kiện lịch sử khác nhau, các phong tục truyền thống thường phản ánh những giá trị cốt lõi của một cộng đồng. Tuy nhiên, khi quá trình toàn cầu hóa diễn ra mạnh mẽ hơn, nhiều tập quán đang dần thay đổi để thích nghi với lối sống hiện đại và nhu cầu của xã hội đương đại.`,
+   `Formed over many generations and influenced by different historical conditions, traditional customs often reflect the core values of a community. However, as globalization gathers pace, many practices are gradually changing to adapt to modern lifestyles and the needs of contemporary society.`],
+  [`Nhờ những tiến bộ trong công nghệ và sự mở rộng của thương mại quốc tế, nhiều quốc gia đang đạt được tốc độ tăng trưởng kinh tế nhanh hơn so với trước đây. Tuy nhiên, lợi ích của sự phát triển không phải lúc nào cũng được phân bổ đồng đều, dẫn đến khoảng cách thu nhập ngày càng lớn giữa các nhóm dân cư khác nhau.`,
+   `Thanks to advances in technology and the expansion of international trade, many countries are achieving faster economic growth than before. However, the benefits of development are not always evenly distributed, leading to a widening income gap between different groups of the population.`],
+  [`Mặc dù công nghệ y tế đã phát triển đáng kể trong những năm gần đây, việc tiếp cận các dịch vụ chăm sóc sức khỏe chất lượng cao vẫn là một thách thức đối với nhiều người sống ở vùng sâu vùng xa. Những bệnh nhân không được chẩn đoán và điều trị kịp thời thường có nguy cơ gặp phải các biến chứng nghiêm trọng, điều này không chỉ ảnh hưởng đến chất lượng cuộc sống mà còn làm gia tăng chi phí điều trị.`,
+   `Although medical technology has developed considerably in recent years, access to high-quality healthcare services remains a challenge for many people living in remote areas. Patients who are not diagnosed and treated in time are often at risk of serious complications, which not only affects their quality of life but also increases the cost of treatment.`],
+  [`Bởi vì áp lực từ công việc và cuộc sống hiện đại ngày càng lớn, tình trạng kiệt sức đã trở thành một vấn đề phổ biến đối với rất nhiều nhân viên văn phòng hiện nay. Nhiều người thường có thói quen làm việc xuyên đêm hoặc mang việc về nhà vào cuối tuần, điều này khiến cho họ không còn thời gian để tái tạo lại năng lượng.`,
+   `Because the pressure of work and modern life is growing, burnout has become a common problem for a great many office workers today. Many people are in the habit of working through the night or taking work home at the weekend, which leaves them no time to recharge their energy.`],
+  [`Mặc dù các rạp chiếu phim truyền thống đang phải cạnh tranh gay gắt với các ứng dụng xem phim trực tuyến, hình thức giải trí này vẫn giữ được một vị thế đặc biệt trong lòng khán giả. Việc thưởng thức một bộ phim bom tấn trên màn ảnh rộng với hệ thống âm thanh sống động mang lại những trải nghiệm chân thực mà không một thiết bị cá nhân nào có thể thay thế được.`,
+   `Although traditional cinemas are facing fierce competition from online streaming apps, this form of entertainment still holds a special place in audiences' hearts. Enjoying a blockbuster on the big screen with a vivid sound system offers a lifelike experience that no personal device can replace.`],
+  [`Do sự tiện lợi và hương vị hấp dẫn của thức ăn nhanh, nhiều bạn trẻ hiện nay đang duy trì một chế độ ăn uống thiếu cân bằng và chứa quá nhiều chất béo có hại. Các chuyên gia dinh dưỡng liên tục cảnh báo rằng việc tiêu thụ quá nhiều đồ ngọt và thực phẩm chiên rán sẽ làm gia tăng nguy cơ mắc bệnh béo phì ở lứa tuổi học đường.`,
+   `Because of the convenience and appealing taste of fast food, many young people today are maintaining an unbalanced diet that contains too much harmful fat. Nutritionists repeatedly warn that consuming too many sweets and fried foods will increase the risk of obesity among school-age children.`],
+  [`Khái niệm về lịch trình làm việc linh hoạt đã trở nên phổ biến trong những năm gần đây vì nó cho phép nhân viên quản lý tốt hơn các trách nhiệm công việc và cá nhân của họ. Các bậc cha mẹ làm việc tại nhà có thể dễ dàng sắp xếp thời gian để chăm sóc con cái mà không gặp trở ngại trong việc hoàn thành thời hạn công việc hằng ngày.`,
+   `The concept of flexible working schedules has become popular in recent years because it allows employees to better manage their professional and personal responsibilities. Parents who work from home can easily arrange their time to look after their children without having trouble meeting their daily work deadlines.`],
+  [`Trong khi việc nghe nhạc đã ghi âm trên các ứng dụng phát trực tuyến kỹ thuật số vô cùng thuận tiện, việc tham dự một buổi hòa nhạc trực tiếp lại mang đến một mức độ phấn khích và kết nối cảm xúc hoàn toàn khác biệt. Việc trở thành một phần của một đám đông lớn cùng hát theo nghệ sĩ tạo ra một cảm giác mạnh mẽ về cộng đồng mà không thể sao chép được khi ở nhà.`,
+   `While listening to recorded music on digital streaming apps is extremely convenient, attending a live concert offers a completely different level of excitement and emotional connection. Being part of a large crowd singing along with the artist creates a powerful sense of community that cannot be replicated at home.`],
+  [`Bởi vì sự phát triển nhanh chóng của công nghệ đã hình thành nên cách thức giao tiếp của các thế hệ khác nhau, cha mẹ và con cái thường cảm thấy khó hiểu được góc nhìn của nhau. Trong khi thanh thiếu niên thích sử dụng tin nhắn văn bản và mạng xã hội để bày tỏ cảm xúc của mình, các thành viên lớn tuổi trong gia đình thường coi trọng các cuộc trò chuyện trực tiếp, mặt đối mặt.`,
+   `Because the rapid development of technology has shaped the way different generations communicate, parents and children often find it hard to understand each other's perspectives. While teenagers prefer to use text messages and social media to express their feelings, older family members tend to value direct, face-to-face conversations.`],
+  [`Với tất cả sự cường điệu xung quanh Trí tuệ nhân tạo, robot, xe tự lái, v.v., thật dễ dàng để nghĩ rằng AI là thứ gì đó xa vời hoặc mang tính tương lai. Tuy nhiên, thực tế là AI đã được đan xen sâu sắc vào cuộc sống hàng ngày của chúng ta theo những cách mà chúng ta thậm chí có thể không nhận ra.`,
+   `With all the hype surrounding artificial intelligence, robots, self-driving cars and so on, it is easy to think that AI is something distant or futuristic. The reality, however, is that AI is already deeply woven into our daily lives in ways we may not even notice.`],
+  [`TOD (Transit-Oriented Development) là mô hình phát triển đô thị lấy giao thông công cộng làm trung tâm. Dù cách triển khai có thể khác nhau tùy địa phương, điểm chung của mô hình này là phát triển đa chức năng với mật độ cao, bao gồm nhà ở cao tầng, trung tâm thương mại, văn phòng, cùng các tiện ích giáo dục, y tế, thể thao...`,
+   `TOD (Transit-Oriented Development) is an urban development model centred on public transport. Although its implementation may vary from place to place, what the model has in common is high-density, mixed-use development, including high-rise housing, shopping centres and offices, along with educational, medical and sports facilities.`],
+  [`Động mạch chủ đưa máu đi nuôi cơ thể, là động mạch lớn nhất, đường kính lớn (khoảng 20-25 mm ở động mạch chủ bụng và khoảng 30 mm ở quai động mạch chủ ngực) để đảm bảo cung cấp máu giàu oxy đi nuôi toàn bộ cơ thể. Đường kính động mạch vành thường chỉ khoảng 3-4 mm ở các đoạn chính.`,
+   `The aorta, which carries blood to nourish the body, is the largest artery; it has a large diameter (about 20–25 mm in the abdominal aorta and about 30 mm at the thoracic aortic arch) to ensure the supply of oxygen-rich blood to the whole body. The diameter of the coronary arteries is usually only about 3–4 mm in their main segments.`]
+ ]}
+];
+
+/* ===================== AI CHẤM BÀI DỊCH ===================== */
+const KKEY='ontap_api_key';
+const getKey=()=>{try{return localStorage.getItem(KKEY)||''}catch(e){return ''}};
+const AI_SYS=`Bạn là giảng viên chấm bài học phần Biên phiên dịch 1 (sinh viên ngành Ngôn ngữ Anh). Chấm bài dịch của sinh viên so với đoạn gốc; bài dịch mẫu chỉ để tham khảo, cách dịch khác vẫn được điểm tối đa nếu đúng nghĩa và tự nhiên.
+Trả lời bằng tiếng Việt, văn bản thuần (không dùng markdown), ngắn gọn, theo đúng bố cục:
+Điểm: x/10
+Sai/thiếu về nghĩa: liệt kê từng chỗ, trích cụm gốc và cụm sinh viên dịch (ghi "Không có" nếu không có)
+Ngữ pháp, từ vựng, diễn đạt: các lỗi cụ thể kèm cách sửa
+Bản sửa đề xuất: bài của sinh viên sau khi sửa, giữ cách diễn đạt của sinh viên ở những chỗ đã đúng`;
+// mở dạng Artifact trên claude.ai thì dùng Claude của người xem, không cần API key
+const samplerP=window.claude&&window.claude.use?window.claude.use('sample'):null;
+const AI_ERR={not_granted:'Bạn chưa cho phép trang dùng Claude. Tải lại trang rồi bấm cho phép khi được hỏi.',sampling_disabled:'Tài khoản này không dùng được Claude trong trang.',rate_limited:'Đã hết lượt dùng Claude lúc này, thử lại sau.',session_expired:'Phiên đăng nhập đã hết hạn, hãy đăng nhập lại claude.ai.',refused:'AI từ chối chấm bài này.'};
+async function askAI(system,content,onText){
+  if(samplerP){
+    const sample=await samplerP;
+    if(!sample)throw new Error('Trang không gọi được Claude ở đây. Hãy mở bằng link Artifact trong claude.ai.');
+    try{return (await sample(system+'\n\n'+content,{cache:false,onText:u=>onText(u.text)})).text.trim()}
+    catch(e){throw new Error(AI_ERR[e.code]||'Chấm chưa thành công, thử lại sau.')}
+  }
+  let r;
+  try{
+    r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'content-type':'application/json','x-api-key':getKey(),'anthropic-version':'2023-06-01',
+        'anthropic-beta':'server-side-fallback-2026-07-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-5-5',max_tokens:16000,fallbacks:'default',output_config:{effort:'medium'},system,
+        messages:[{role:'user',content}]})});
+  }catch(e){throw new Error('Không kết nối được tới api.anthropic.com. Kiểm tra mạng rồi thử lại.')}
+  const j=await r.json().catch(()=>({}));
+  if(r.status===401)throw new Error('API key không hợp lệ. Bấm ⚙️ để nhập lại.');
+  if(!r.ok)throw new Error((j.error&&j.error.message)||('Lỗi HTTP '+r.status));
+  if(j.stop_reason==='refusal')throw new Error('AI từ chối chấm đoạn này.');
+  return (j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+}
+// nút chấm + khung nhận xét dùng chung; run() trả về [system, nội dung] hoặc chuỗi báo chưa làm bài
+function aiPanel(st,label,run){
+  const ask=el('button','btn',label),ai=el('div','ai');
+  const showAi=(txt,err)=>{ai.hidden=!txt;ai.className='ai'+(err?' err':'');ai.innerHTML=`<b class="h">${err?'Chưa chấm được':'Nhận xét của AI'}</b>`;ai.append(txt||'')};
+  showAi(st.ai);
+  ask.onclick=async()=>{
+    const req=run();
+    if(typeof req==='string'){showAi(req,1);return}
+    if(!samplerP&&!getKey()){openCfg();return}
+    ask.disabled=true;ask.textContent='Đang chấm…';
+    try{st.ai=await askAI(...req,showAi);save();showAi(st.ai)}
+    catch(e){showAi(e.message,1)}
+    ask.disabled=false;ask.textContent=label;
+  };
+  return [ask,ai];
+}
+const words=t=>(t=t.trim())?t.split(/\s+/).length:0;
+// nút làm lại từng câu; đã có bài thì phải bấm hai lần mới xoá
+function redoBtn(has,reset){
+  const b=el('button','btn ghost','↻ Làm lại');let armed=false;
+  b.onclick=()=>{
+    if(has()&&!armed){armed=true;b.textContent='Bấm lần nữa để xoá bài';setTimeout(()=>{armed=false;b.textContent='↻ Làm lại'},3000);return}
+    reset();
+  };
+  return b;
+}
+
+/* ===================== MÀN: DỊCH ===================== */
+function trItem(part,i){
+  const [src,model]=part.items[i],id=part.id+(i+1);
+  const st=S.tr[id]||(S.tr[id]={t:''});
+  const d=el('div','rw');d.id=id;
+  d.appendChild(el('div','src',`<b>${i+1}.</b> ${esc(src)}`));
+  const ta=el('textarea');ta.placeholder=`Bài dịch sang ${part.to} của bạn…`;ta.value=st.t||'';
+  const wc=el('div','wc');
+  const count=()=>{wc.textContent=words(ta.value)+' từ'};
+  ta.oninput=()=>{st.t=ta.value;save();count()};count();
+  const foot=el('div','foot');
+  const [ask,ai]=aiPanel(st,'AI chấm bài',()=>ta.value.trim()
+    ?[AI_SYS,`Yêu cầu: dịch sang ${part.to}.\n\nĐoạn gốc:\n${src}\n\nBài dịch của sinh viên:\n${ta.value.trim()}\n\nBài dịch mẫu:\n${model}`]
+    :'Bạn chưa nhập bài dịch.');
+  const key=el('button','btn ghost');
+  foot.append(ask,key,redoBtn(()=>ta.value.trim(),()=>{delete S.tr[id];save();d.replaceWith(trItem(part,i))}));
+  const mo=el('div','model','<b>Bài dịch mẫu (tham khảo)</b><span></span>');mo.lastChild.textContent=model;
+  const showKey=()=>{mo.hidden=!st.show;key.textContent=st.show?'Ẩn bài dịch mẫu':'Xem bài dịch mẫu'};
+  key.onclick=()=>{st.show=!st.show;save();showKey()};showKey();
+  d.append(ta,wc,foot,mo,ai);
+  return d;
+}
+function buildDich(){
+  const r=document.getElementById('dich');
+  r.innerHTML=`<h1>Biên phiên dịch 1</h1><p class="lead">30 đoạn luyện tập (đề thi: 5 đoạn Anh → Việt và 5 đoạn Việt → Anh, mỗi đoạn 1 điểm). Bài làm tự lưu; bấm <b>AI chấm bài</b> để được nhận xét, hoặc xem bài dịch mẫu.</p>
+  <div class="chips">${DICH.map(p=>`<a href="#${p.id}">${p.title.split('.')[0]}</a>`).join('')}</div>`;
+  DICH.forEach(p=>{
+    const c=el('div','card');c.id=p.id;
+    c.innerHTML=`<h2 style="margin-top:0;padding-top:0">${esc(p.title)}</h2><p class="instr">${esc(p.instr)}</p>`;
+    p.items.forEach((_,i)=>c.appendChild(trItem(p,i)));
+    r.appendChild(c);
+  });
+}
+
+/* ===================== DỮ LIỆU: VIẾT ===================== */
+// viết lại câu: [câu gốc, gợi ý, các đáp án chấp nhận]
+const REWRITE=[
+ ['A tiger is dangerous. A rabbit is not dangerous.','unlike/ like',['Unlike a tiger, a rabbit is not dangerous.']],
+ ['Vancouver has a mild winter. Halifax has a cold winter.','unlike/ like',['Unlike Vancouver, Halifax has a cold winter.','Unlike Halifax, Vancouver has a mild winter.']],
+ ['My brother likes football. I like football, too.','unlike/ like',['Like my brother, I like football.','Like me, my brother likes football.']],
+ ['I like travelling by train. I think travelling by bus is not so comfortable.','more/ less',['I think travelling by train is more comfortable than travelling by bus.','I think travelling by bus is less comfortable than travelling by train.']],
+ ['I find English easy. I find Chinese difficult.','more difficult',['I find Chinese more difficult than English.']],
+ ['My brother is tall. My sister is not tall.','shorter',['My sister is shorter than my brother.']],
+ ['She studies hard to pass the exam.','so that',['She studies hard so that she can pass the exam.','She studies hard so that she will pass the exam.']],
+ ['They saved money to buy a new house.','so that',['They saved money so that they could buy a new house.']],
+ ['Some people carpool to work in order to save money.','so that',['Some people carpool to work so that they can save money.','Some people carpool to work so that they will save money.']],
+ ['The school organizes many extracurricular activities every semester.','passive voice',['Many extracurricular activities are organized by the school every semester.']],
+ ['People use smartphones for both work and entertainment nowadays.','passive voice',['Smartphones are used for both work and entertainment nowadays.']],
+ ['The students have completed the project successfully.','passive voice',['The project has been completed successfully by the students.','The project has been successfully completed by the students.']],
+ ['The company has introduced several new products this year.','passive voice',['Several new products have been introduced by the company this year.']],
+ ['The teacher will announce the results tomorrow.','passive voice',['The results will be announced by the teacher tomorrow.']],
+ ['They will finish the construction of the new library by December.','passive voice',['The construction of the new library will be finished by December.']],
+ ['The government built a new bridge across the river last year.','passive voice',['A new bridge was built across the river by the government last year.','A new bridge was built across the river last year.']],
+ ['They held the meeting in the conference room yesterday.','passive voice',['The meeting was held in the conference room yesterday.']],
+ ['She should study hard to get good grades for the final test.','if',['If she studies hard, she will get good grades for the final test.']],
+ ['You can’t visit the USA when you do not have a visa.','if',['If you do not have a visa, you can’t visit the USA.','If you don’t have a visa, you can’t visit the USA.','You can’t visit the USA if you do not have a visa.']],
+ ['We do exercise regularly. We can be healthy in old age.','if',['If we do exercise regularly, we can be healthy in old age.']],
+ ['He can be promoted when he works hard.','if',['If he works hard, he can be promoted.','He can be promoted if he works hard.']],
+ ['I will travel to Paris. I will buy some lipstick for you.','if',['If I travel to Paris, I will buy some lipstick for you.']],
+ ['He doesn’t apologize to me, so I don’t want to talk to him.','if',['If he apologized to me, I would want to talk to him.','If he doesn’t apologize to me, I won’t want to talk to him.']],
+ ['She cried because she got the bad news.','because of',['She cried because of the bad news.','She cried because of getting the bad news.']],
+ ['They failed the exams because the questions were difficult.','because of',['They failed the exams because of the difficult questions.']],
+ ['Nam was sad because of his bad mark.','because',['Nam was sad because he got a bad mark.','Nam was sad because he had a bad mark.','Nam was sad because he received a bad mark.']],
+ ['She didn’t come to school because she was sick.','because of',['She didn’t come to school because of her sickness.','She didn’t come to school because of her illness.','She didn’t come to school because of being sick.']],
+ ['The match was cancelled because of the heavy rain.','because',['The match was cancelled because it rained heavily.','The match was cancelled because the rain was heavy.']],
+ ['He left early because of his illness.','because',['He left early because he was ill.','He left early because he was sick.']],
+ ['It is very easy to find a good job in a big city.','gerund',['Finding a good job in a big city is very easy.']],
+ ['She thinks earning a lot of money is not difficult for her.','to verb',['She thinks it is not difficult for her to earn a lot of money.']],
+ ['It is exciting to travel abroad.','gerund',['Travelling abroad is exciting.','Traveling abroad is exciting.']],
+ ['Learning a foreign language is useful.','to verb',['It is useful to learn a foreign language.']],
+ ['She painted her house for a week.','take/ spend',['It took her a week to paint her house.','She spent a week painting her house.']],
+ ['I wrote this letter in ten minutes.','spend/ take',['I spent ten minutes writing this letter.','It took me ten minutes to write this letter.']],
+ ['My friends will spend two days doing the homework.','take',['It will take my friends two days to do the homework.']],
+ ['She spent three hours finishing her report.','take',['It took her three hours to finish her report.']],
+ ['It took me two days to complete the project.','spend',['I spent two days completing the project.']],
+ ['The box is too heavy for me to carry.','enough',['The box is not light enough for me to carry.','The box isn’t light enough for me to carry.']],
+ ['She is not old enough to drive a car.','too',['She is too young to drive a car.']],
+ ['The woman is my aunt. She is talking to your mother.','relative clause',['The woman who is talking to your mother is my aunt.','The woman that is talking to your mother is my aunt.','The woman talking to your mother is my aunt.']],
+ ['The book is very interesting. I bought it yesterday.','relative clause',['The book which I bought yesterday is very interesting.','The book that I bought yesterday is very interesting.','The book I bought yesterday is very interesting.']]
+];
+const EMAILS=[
+ ['Your English friend, Jack, has invited you to his birthday party next Saturday. Write an email in about 50 words to Jack. In your email, you should:',['Confirm whether you can attend the party','Suggest a gift for him']],
+ ['You would like to buy a smartphone from your Australian friend, David. Write an email in about 50 words to David. In your email, you should:',['Tell David what brand and color of smartphone you would like to buy','Explain why you want to buy the smartphone']],
+ ['Your English friend, Anna, is planning a school trip to your hometown next month. Write an email in about 50 words to Anna. In your email, you should:',['Suggest the best time to visit','Recommend two interesting places to see']],
+ ['You would like to buy a bicycle from your British friend, Emma. Write an email in about 50 words to Emma. In your email, you should:',['Tell Emma what type and color of bicycle you would like to buy','Explain why you need the bicycle']]
+];
+const ESSAYS=[
+ ['Cause and effect essay','Rapid urbanization has helped improve living standards for many people. However, it has also created several environmental challenges. What are the main negative effects of rapid urbanization on the environment?'],
+ ['Cause and effect essay','In recent years, youth unemployment has risen noticeably in many countries, creating concerns for both families and governments. What are the main causes of this problem?'],
+ ['Discussion essay','“Some people believe that advertising encourages consumers to buy unnecessary products. Others argue that advertising provides useful information and supports the economy.” Discuss both sides and give your opinion.'],
+ ['Discussion essay','“Many people believe that public transportation should be free to reduce traffic congestion and pollution. Others think that making it free would place too much burden on government budgets.” Discuss both sides and give your opinion.']
+];
+const WR_HEAD='Bạn là giảng viên chấm bài học phần Kỹ năng Viết tiếng Anh 3 (sinh viên ngành Ngôn ngữ Anh). Trả lời bằng tiếng Việt, văn bản thuần (không dùng markdown), ngắn gọn, theo đúng bố cục:\n';
+const EM_SYS=WR_HEAD+`Điểm: x/2
+Nội dung: đã đủ các ý đề yêu cầu chưa, độ dài có khoảng 50 từ không
+Hình thức email: lời chào, lời kết, giọng văn
+Lỗi ngữ pháp, từ vựng, chính tả: từng lỗi kèm cách sửa
+Bản sửa đề xuất: email của sinh viên sau khi sửa, giữ ý của sinh viên`;
+const ES_SYS=WR_HEAD+`Điểm: x/5
+Bố cục: mở bài, thân bài, kết bài có đúng dạng bài (discussion / cause and effect) không; độ dài 200–250 từ
+Ý và lập luận: mức độ trả lời đề, độ rõ và sự phát triển của từng ý
+Liên kết: từ nối so sánh – đối lập, nguyên nhân – kết quả
+Lỗi ngữ pháp, từ vựng, chính tả: các lỗi chính kèm cách sửa
+Gợi ý cải thiện: 2–3 việc cụ thể nên sửa trước`;
+
+/* ===================== MÀN: VIẾT ===================== */
+const norm=s=>s.toLowerCase().replace(/[’‘]/g,"'").replace(/[^a-z0-9' ]+/g,' ').replace(/\s+/g,' ').trim();
+function rwItem(i){
+  const [q,hint,ans]=REWRITE[i],id='rw'+(i+1);
+  const st=S.wr[id]||(S.wr[id]={t:''});
+  const d=el('div','rw');d.id=id;
+  d.appendChild(el('div','qt',`<b>${i+1}.</b> ${esc(q)} <span class="hint">(${esc(hint)})</span>`));
+  const inp=el('input');inp.type='text';inp.placeholder='Viết lại câu…';inp.value=st.t||'';
+  const out=el('div'),foot=el('div','foot'),chk=el('button','btn ghost','Kiểm tra');
+  const mo=el('div','model','<b>Đáp án gợi ý</b><span></span>');mo.lastChild.textContent=ans.join('\n');
+  const verdict=()=>{
+    out.innerHTML='';mo.hidden=!st.done;
+    if(!st.done)return;
+    const ok=ans.some(a=>norm(a)===norm(st.t));
+    out.appendChild(el('div','verdict '+(ok?'ok':'no'),ok?'✓ Khớp đáp án':'Khác đáp án gợi ý — so với đáp án bên dưới'));
+  };
+  inp.oninput=()=>{st.t=inp.value;st.done=false;save();verdict()};
+  chk.onclick=()=>{if(!inp.value.trim())return;st.done=true;save();verdict()};
+  inp.onkeydown=e=>{if(e.key==='Enter')chk.click()};
+  foot.append(chk,redoBtn(()=>inp.value.trim(),()=>{delete S.wr[id];save();d.replaceWith(rwItem(i))}));verdict();
+  d.append(inp,out,foot,mo);
+  return d;
+}
+function essayItem(id,srcHtml,task,sys,target,minH){
+  const st=S.wr[id]||(S.wr[id]={t:''});
+  const d=el('div','rw');d.id=id;
+  d.appendChild(el('div','src',srcHtml));
+  const ta=el('textarea');ta.style.minHeight=minH+'px';ta.placeholder='Bài viết của bạn…';ta.value=st.t||'';
+  const wc=el('div','wc');
+  const count=()=>{wc.textContent=`${words(ta.value)} từ (yêu cầu ${target})`};
+  ta.oninput=()=>{st.t=ta.value;save();count()};count();
+  const foot=el('div','foot');
+  const [ask,ai]=aiPanel(st,'AI chấm bài',()=>ta.value.trim()?[sys,`Đề bài:\n${task}\n\nBài làm của sinh viên (${words(ta.value)} từ):\n${ta.value.trim()}`]:'Bạn chưa viết bài.');
+  foot.append(ask,redoBtn(()=>ta.value.trim(),()=>{delete S.wr[id];save();d.replaceWith(essayItem(id,srcHtml,task,sys,target,minH))}));
+  d.append(ta,wc,foot,ai);
+  return d;
+}
+function buildViet(){
+  const r=document.getElementById('viet');
+  r.innerHTML=`<h1>Kỹ năng Viết 3</h1><p class="lead">3 dạng bài như đề thi: viết lại câu (3 điểm), email khoảng 50 từ (2 điểm), bài luận 200–250 từ (5 điểm). Bài làm tự lưu.</p>
+  <div class="chips"><a href="#w1">I. Rewrite</a><a href="#w2">II. Email</a><a href="#w3">III. Essay</a></div>`;
+  const card=(id,title,instr)=>{const c=el('div','card');c.id=id;c.innerHTML=`<h2 style="margin-top:0;padding-top:0">${title}</h2><p class="instr">${instr}</p>`;r.appendChild(c);return c};
+  const c1=card('w1','I. Rewrite the sentences','Rewrite the following sentences using the suitable given words or structures. (3 pts)');
+  REWRITE.forEach((_,i)=>c1.appendChild(rwItem(i)));
+  const c2=card('w2','II. Email','Write an email in about 50 words according to the requirement and include the necessary information. (2 pts)');
+  EMAILS.forEach(([q,pts],i)=>c2.appendChild(essayItem('em'+(i+1),
+    `<b>Sample ${i+1}.</b> ${esc(q)}<ul class="tight">${pts.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`,
+    q+'\n'+pts.map(p=>'+ '+p).join('\n'),EM_SYS,'khoảng 50 từ',120)));
+  const c3=card('w3','III. Essay','Write a three or four paragraph essay in about 200 – 250 words. (5 pts)');
+  ESSAYS.forEach(([kind,q],i)=>c3.appendChild(essayItem('es'+(i+1),
+    `<b>Topic ${i+1} – ${kind}.</b> ${esc(q)}`,`${kind}: ${q}\nYêu cầu: bài luận 3–4 đoạn, 200–250 từ.`,ES_SYS,'200–250 từ',260)));
+}
+
 /* ===================== ĐIỀU HƯỚNG & CÀI ĐẶT ===================== */
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
@@ -357,8 +661,23 @@ function show(id){
 document.querySelectorAll('.tab[data-s]').forEach(t=>t.onclick=()=>show(t.dataset.s));
 // chỉ phát một file âm thanh tại một thời điểm
 document.addEventListener('play',e=>{document.querySelectorAll('audio').forEach(a=>{if(a!==e.target)a.pause()})},true);
-buildNghe();buildDoc();
-show(['nghe','doc'].includes(S.tab)?S.tab:'nghe');
+const cfg=document.getElementById('cfg'),cfgKey=document.getElementById('cfgKey');
+function openCfg(){cfgKey.value=getKey();cfg.returnValue='';cfg.showModal()}
+document.getElementById('cfgBtn').onclick=openCfg;
+document.getElementById('cfgBtn').hidden=!!samplerP;
+cfg.onclose=()=>{
+  try{
+    if(cfg.returnValue==='ok'&&cfgKey.value.trim())localStorage.setItem(KKEY,cfgKey.value.trim());
+    if(cfg.returnValue==='del')localStorage.removeItem(KKEY);
+  }catch(e){}
+  cfgKey.value='';
+};
+// bản Artifact không kèm file ghi âm và ảnh nên chỉ có Viết và Dịch
+const TABS=samplerP?['viet','dich']:['nghe','doc','viet','dich'];
+document.querySelectorAll('.tab[data-s]').forEach(t=>t.hidden=!TABS.includes(t.dataset.s));
+if(!samplerP){buildNghe();buildDoc()}
+buildViet();buildDich();
+show(TABS.includes(S.tab)?S.tab:TABS[0]);
 </script>
 </body>
 </html>
