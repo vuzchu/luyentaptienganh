@@ -96,6 +96,7 @@ ul.tight{margin:6px 0;padding-left:20px}
   <button class="tab" data-s="doc">📖 Đọc</button>
   <button class="tab" data-s="viet">📝 Viết</button>
   <button class="tab" data-s="dich">✍️ Dịch</button>
+  <button class="tab" data-s="trung">中 Tiếng Trung</button>
   <button class="tab" id="cfgBtn" title="Cài đặt AI chấm bài">⚙️</button>
 </div></header>
 
@@ -104,6 +105,7 @@ ul.tight{margin:6px 0;padding-left:20px}
   <section class="screen" id="doc"></section>
   <section class="screen" id="viet"></section>
   <section class="screen" id="dich"></section>
+  <section class="screen" id="trung" lang="zh"></section>
 </main>
 
 <dialog id="cfg"><form method="dialog">
@@ -303,7 +305,7 @@ function quiz(id,qs,cfg={}){
   };
   qs.forEach((q,i)=>{
     const d=el('div','q');
-    let head=`<b>${start+i}.</b> ${q.q?esc(q.q):''}`;
+    let head=`<b>${start+i}.</b> ${q.q?esc(q.q).replace(/\n/g,'<br>'):''}`;
     if(q.who) head=`<div class="who"><img src="${q.who}" alt=""><div>${head}</div></div>`;
     d.appendChild(el('div','qt',head));
     if(q.img){const im=el('img','qimg');im.src=q.img;im.alt='Notice '+(start+i);d.appendChild(im)}
@@ -382,6 +384,111 @@ function buildDoc(){
     r.appendChild(c);
   });
 }
+
+/* ===================== DỮ LIỆU: TIẾNG TRUNG ===================== */
+// [câu hỏi, các lựa chọn, đáp án] — 100 câu theo đề cương; đề không kèm đáp án, đáp án do người làm trang điền
+const TQ=[
+ ["Phiên âm đúng từ “四”", ["sī", "sì", "shī", "shì"], 1],
+ ["“星期六我去图书馆。”", ["Thứ tư tôi đi thư viện", "Thứ năm tôi đi thư viện", "Thứ sáu tôi đi thư viện", "Thứ bảy tôi đi thư viện"], 3],
+ ["Từ loại nào là động từ ?", ["喝", "好", "天", "大"], 0],
+ ["你好___________？", ["妈", "吗", "马", "骂"], 1],
+ ["Chọn câu trả lời đúng: “爸爸工作忙吗？”", ["忙不太。", "太不忙。", "忙太不。", "不太忙。"], 3],
+ ["Phiên âm đúng của từ “银行”", ["gōngzuò", "Xuéxiào", "Zhōngwǔ", "Yínháng"], 3],
+ ["Đáp án nào dươi đây có nghĩa : “ Nước Pháp”。", ["中国", "日本", "法国", "韩国"], 2],
+ ["今天星期___________？", ["几", "天", "五", "吗"], 0],
+ ["我___________银行取钱。", ["忙", "学", "见", "去"], 3],
+ ["Đáp án nào có nghĩa là \"Trường học\"", ["关系", "取钱", "学习", "学校"], 3],
+ ["Phiên âm đúng của từ “汉语”。", ["Hānyǔ", "Hányǔ", "Hànyǔ", "Hànyú"], 2],
+ ["Chữ “好” gồm mấy nét?", ["3", "4", "5", "6"], 3],
+ ["Phiên âm đúng của từ “法语”", ["Rìyǔ", "Fǎyǔ", "Yīngyǔ", "Hányǔ"], 1],
+ ["Chữ “不” thanh mấy ?", ["1", "2", "3", "4"], 3],
+ ["汉字___________难，发音不太难。", ["都", "也", "很", "是"], 2],
+ ["Nghĩa chính xác của từ “白马”", ["Bưu điện", "Mời ngồi", "Ngựa trắng", "Uống trà"], 2],
+ ["“请喝茶” nghĩa là gì?", ["Mời vào", "Mời ngồi", "Mời uống nước", "Mời uống trà"], 3],
+ ["Chọn câu trả lời đúng: “我去学校学汉语，你去吗？”", ["我很去。", "他很去。", "我不去。", "他不去。"], 2],
+ ["Trong Tiếng Trung chữ “八” phiên âm nào sau đây đúng", ["pā", "bā", "pà", "bà"], 1],
+ ["汉语不_________难。", ["太", "很", "大", "好"], 0],
+ ["Đâu là thanh mẫu ?", ["n, l, a, o", "n, l, m, u", "n, l, t, q", "n, l, e, g"], 2],
+ ["Phiên âm đúng của từ “对不起”", ["tuìbùqí", "duìbùxi", "chuìpùqǐ", "duìbuqǐ"], 3],
+ ["Chọn câu đúng", ["你哥哥吗忙？", "忙哥哥你妈？", "你哥哥忙吗？", "吗你哥哥忙？"], 2],
+ ["Chọn câu trả lời đúng: “你身体好吗?”", ["很大", "很好", "很忙", "很难"], 1],
+ ["Đáp án nào dưới đây không phải là  đồ uống", ["咖啡", "鸡肉", "啤酒", "果汁"], 1],
+ ["Chọn cách viết đúng của từ “Bắc Kinh”", ["中国", "北京", "上海", "越南"], 1],
+ ["Từ nào có phiên âm giống với từ “ 难”", ["他", "她", "男", "谁"], 2],
+ ["Phiên âm chính xác của từ “老师”", ["Lǎoshī", "Lǎoshi", "Láoshi", "Láoshī"], 0],
+ ["Phiên âm chính xác của từ “中国”", ["zhōngguó", "zhòngguó", "zhōngguǒ", "zhòngguǒ"], 0],
+ ["这是___________书？", ["怎么", "这么", "那么", "什么"], 3],
+ ["请您喝___________。", ["木", "茶", "学", "吃"], 1],
+ ["Thanh mẫu nào kết hợp với “+i” phải đọc là “ư”。", ["l", "z", "n", "q"], 1],
+ ["Câu nào có nghĩa: “ Đây là điện thoại của tôi”？", ["这是手机的我。", "这是我的手机", "这是手机的你。", "这是你的手机"], 1],
+ ["“对不起” nghĩa là gì?", ["Cảm ơn", "Không có gì", "Rất tốt", "Xin lỗi"], 3],
+ ["Thanh mẫu nào sau đây là thanh mẫu bật hơi", ["f, h, d", "b, t, l", "n, c, g", "q, c, p"], 3],
+ ["Chữ 茶và 花 cùng có bộ thủ gì?", ["Bộ thổ", "Bộ mộc", "Bộ Thảo đầu", "Bộ kim"], 2],
+ ["__________是你朋友？", ["谁", "忙", "吗", "难"], 0],
+ ["你在___________学汉语？", ["哪儿", "娜", "那", "呐"], 0],
+ ["Chọn câu trả lời đúng: “今天中午你去哪儿吃饭？”", ["我去食堂。", "我吃饭。", "我去银行。", "我不吃饭。"], 0],
+ ["“身体好吗? ”có nghĩa là gì", ["Tiếng Anh học tốt không ?", "Công việc bận không?", "Sức khoẻ tốt không?", "Công việc tốt không?"], 2],
+ ["Chọn đáp án có nghĩa tiếng Việt là “em gái”", ["姐姐", "弟弟", "哥哥", "妹妹"], 3],
+ ["Phiên âm chính xác của từ “明天”：", ["Hòutiān", "Jīntiān", "Zuótiān", "Míngtiān"], 3],
+ ["你爸爸___________老师吗?", ["是", "不", "忙", "好"], 0],
+ ["我要一___________鸡蛋汤。", ["妹", "杯", "碗", "吃"], 2],
+ ["“学英语”nghĩa là gì", ["Trường học", "Học Tiếng Hán", "Học Tiếng Nhật", "Học Tiếng Anh"], 3],
+ ["Chọn cách ghi phiên âm đúng của từ “妈妈”", ["Màmǎ", "Mámá", "Mámǎ", "Māma"], 3],
+ ["Đáp án nào dưới đây chứa Thanh nhẹ", ["老师", "韩国", "爸爸", "很好"], 2],
+ ["你好___________？", ["妈", "吗", "马", "骂"], 1],
+ ["今天星期___________？", ["几", "天", "五", "吗"], 0],
+ ["你去___________去？", ["太", "很", "不", "大"], 2],
+ ["Chọn cách viết đúng của từ “Anh trai”", ["弟弟", "哥哥", "妹妹", "爸爸"], 1],
+ ["Đáp án nào dưới đây chứa Thanh nhẹ。", ["Gēge", "lǎoshī", "xuéxiào", "Hànyǔ"], 0],
+ ["Nghĩa chính xác của từ “学校”", ["Bưu điện", "Ngân hàng", "Tiếng Hán", "Trường học"], 3],
+ ["Chọn hình thức phủ định đúng : 我_______有钱。", ["很", "不", "没", "大"], 2],
+ ["Chọn câu đúng (A, B, C hoặc D)", ["明天你去不去？", "明天去不去你？", "不去去你明天？", "不你不去明天？"], 0],
+ ["Chọn câu đúng (A, B, C hoặc D)", ["你好吗？", "你好马？", "你好骂？", "你好妈？"], 0],
+ ["Chọn câu trả lời đúng: “妈妈忙吗?”", ["很忙", "很难", "很不", "很好"], 0],
+ ["Chọn đáp án đúng điền vào chỗ trống: 我___________银行取钱。", ["忙", "学", "见", "去"], 3],
+ ["Phiên âm đúng của từ “汉语”", ["Hānyǔ", "Hányǔ", "Hànyǔ", "Hànyú"], 2],
+ ["Chọn câu đúng (A, B, C hoặc D)", ["我不有钱。", "我没有钱。", "我钱不有。", "我钱有没。"], 1],
+ ["Cách đọc đúng của “七”", ["Yī", "Wǔ", "Qī", "Èr"], 2],
+ ["我买两__________包子。", ["包", "个", "吃", "子"], 1],
+ ["Trong Tiếng Trung “去” phiên âm nào sau đây đúng", ["qū", "qú", "qǔ", "qù"], 3],
+ ["Chọn câu đúng:", ["忙爸爸你吗？", "吗你爸爸忙？", "你爸爸吗忙？", "你爸爸忙吗？"], 3],
+ ["Chữ “大” gồm mấy nét?", ["1", "2", "3", "4"], 2],
+ ["Phiên âm chữ “好” chứa thanh mấy ?", ["1", "2", "3", "4"], 2],
+ ["Đáp án nào sau đây khi đọc phải biến điệu?", ["不难", "不好", "不大", "不忙"], 2],
+ ["Chữ “不” thanh mấy ?", ["1", "2", "3", "4"], 3],
+ ["汉字___________难，发音不太难。", ["都", "也", "很", "是"], 2],
+ ["Phiên âm đúng của từ “日语”", ["Yīngyǔ", "Rìyǔ", "Fǎyǔ", "Hányǔ"], 1],
+ ["“妹妹好吗？” Nghĩa chính xác của câu trên là gì ？", ["Chị gái khỏe không?", "Bạn khỏe không?", "Em gái khỏe không?", "Mẹ khỏe không?"], 2],
+ ["Chữ “他” có nghĩa là :", ["Chị ấy", "Cô ấy", "Ông ấy", "Bạn ấy"], 2],
+ ["Trong Tiếng Trung chữ “八” phiên âm nào sau đây đúng", ["pā", "bā", "pà", "bà"], 1],
+ ["“银行”nghĩa là gì", ["Rút tiền", "Đi học", "Tiếng Hán", "Ngân hàng"], 3],
+ ["Chữ “她” có nghĩa là :", ["Anh ấy", "Cô ấy", "Ông ấy", "Bạn ấy"], 1],
+ ["“工作” có nghĩa là gì?", ["Công việc/làm việc", "Ngồi", "Uống trà", "Học tập"], 0],
+ ["“谁的书” có nghĩa là gì?", ["Sách gì?", "Sách tiếng gì?", "Sách ở đâu?", "Sách của ai?"], 3],
+ ["Hoàn thành hội thoại:\nA: 你工作忙吗？\nB: ____", ["不客气！", "请进！", "很好，谢谢！", "不太忙。"], 3],
+ ["“你去哪儿？” có nghĩa là gì?", ["Bạn là ai?", "Bạn học gì?", "Bạn khỏe không?", "Bạn đi đâu?"], 3],
+ ["Điền từ thích hợp: 汉语____太难。", ["是", "很", "不", "没"], 2],
+ ["Hoàn thành câu: 你爸爸____好吗？", ["名字", "贡茶", "汉语", "身体"], 3],
+ ["Câu nào có nghĩa là “Em gái không bận lắm”?", ["姐姐不太忙。", "妹妹很忙。", "妹妹不忙。", "妹妹不太忙。"], 3],
+ ["Trả lời phù hợp nhất cho câu hỏi “今天星期几？”", ["不太难。", "今天星期五。", "我去学校。", "我很好。"], 1],
+ ["Sắp xếp đúng: 人 / 不 / 法国 / 是 / 他", ["不是他法国人。", "他法国不是人。", "他不是法国人。", "法国人他不是。"], 2],
+ ["Chọn câu đúng: “Mẹ không đi bưu điện.”", ["妈妈去邮局。", "妈妈不去银行。", "妈妈不去邮局。", "爸爸不去邮局。"], 2],
+ ["“邮局” có nghĩa là gì?", ["Ngân hàng", "Bưu điện", "Trường học", "Nhà"], 1],
+ ["Chọn chữ Hán đúng với pinyin “péngyou”.", ["名字", "朋友", "工作", "老师"], 1],
+ ["“银行” có nghĩa là gì?", ["Bưu điện", "Ngân hàng", "Bắc Kinh", "Trường học"], 1],
+ ["Chọn phiên âm đúng của “取钱”.", ["qù qián", "qū qián", "qǔ qiǎn", "qǔ qián"], 3],
+ ["Hoàn thành hội thoại: A: 请喝茶！ B: ____", ["再见！", "谢谢！", "没关系！", "对不起！"], 1],
+ ["“这是王老师” có nghĩa là gì?", ["Đây là anh Vương.", "Kia là thầy Vương.", "Thầy Vương đi đâu?", "Đây là thầy Vương."], 3],
+ ["Đọc hội thoại:\n王明：请喝茶！\n王英：谢谢。明天我去银行取钱，你去吗？\n王明：不去，我去学校学汉语。\nHỏi: 明天王英去哪儿？", ["去北京", "去银行", "去邮局", "去学校"], 1],
+ ["Chọn phiên âm đúng của “妈妈”.", ["màma", "mǎma", "máma", "māma"], 3],
+ ["“明天见” có nghĩa là gì?", ["Hôm nay gặp", "Tạm biệt thầy giáo", "Hôm qua gặp", "Ngày mai gặp"], 3],
+ ["Chọn câu đúng với nghĩa “Hôm nay là thứ sáu.”", ["昨天星期五。", "今天星期五。", "明天星期五。", "今天星期四。"], 1],
+ ["“对不起” thường được đáp lại bằng câu nào?", ["请坐", "谢谢", "再见", "没关系"], 3],
+ ["Hoàn thành câu: 我很____，我不去。", ["忙", "书", "茶", "谁"], 0],
+ ["Chọn phiên âm đúng của chữ “你”.", ["nǐ", "ni", "ní", "nì"], 0],
+ ["Chọn chữ Hán đúng với pinyin “qǐngwèn”.", ["请坐", "请进", "请喝", "请问"], 3],
+ ["Chọn phiên âm đúng của chữ “好”.", ["hào", "háo", "hǎo", "hao"], 2]
+].map(([q,o,k])=>({q,o,k}));
 
 /* ===================== DỮ LIỆU: DỊCH ===================== */
 // mỗi mục: [đoạn gốc, bài dịch mẫu]
@@ -670,6 +777,20 @@ function buildViet(){
     `<b>Topic ${i+1} – ${kind}.</b> ${esc(q)}`,`${kind}: ${q}\nYêu cầu: bài luận 3–4 đoạn, 200–250 từ.`,ES_SYS,'200–250 từ',260)));
 }
 
+/* ===================== MÀN: TIẾNG TRUNG ===================== */
+function buildTrung(){
+  const r=document.getElementById('trung'),N=25,parts=[];
+  for(let s=0;s<TQ.length;s+=N)parts.push([s+1,Math.min(s+N,TQ.length)]);
+  r.innerHTML=`<h1 lang="vi">Tiếng Trung Quốc</h1><p class="lead" lang="vi">100 câu trắc nghiệm theo đề cương ôn thi kết thúc học phần, chia 4 phần. Nộp từng phần để xem đáp án; bấm <b>Làm lại</b> để đảo vị trí đáp án.</p>
+  <div class="chips" lang="vi">${parts.map(([a,b])=>`<a href="#tq${a}">Câu ${a}–${b}</a>`).join('')}</div>`;
+  parts.forEach(([a,b])=>{
+    const c=el('div','card');c.id='tq'+a;
+    c.innerHTML=`<h2 style="margin-top:0;padding-top:0" lang="vi">Câu ${a}–${b}</h2>`;
+    c.appendChild(quiz('T'+a,TQ.slice(a-1,b),{start:a,row:1}));
+    r.appendChild(c);
+  });
+}
+
 /* ===================== ĐIỀU HƯỚNG & CÀI ĐẶT ===================== */
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
@@ -691,11 +812,11 @@ cfg.onclose=()=>{
   }catch(e){}
   cfgKey.value='';
 };
-// bản Artifact không kèm file ghi âm và ảnh nên chỉ có Viết và Dịch
-const TABS=samplerP?['viet','dich']:['nghe','doc','viet','dich'];
+// bản Artifact không kèm file ghi âm và ảnh nên bỏ Nghe và Đọc
+const TABS=samplerP?['viet','dich','trung']:['nghe','doc','viet','dich','trung'];
 document.querySelectorAll('.tab[data-s]').forEach(t=>t.hidden=!TABS.includes(t.dataset.s));
 if(!samplerP){buildNghe();buildDoc()}
-buildViet();buildDich();
+buildViet();buildDich();buildTrung();
 show(TABS.includes(S.tab)?S.tab:TABS[0]);
 </script>
 </body>
